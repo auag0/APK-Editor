@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.ibotpeaches.issue2328"
+    platformBuildVersionCode="20"
+    platformBuildVersionName="4.4W.2-1537038">
+
+    <application android:debuggable="true" />
+</manifest>

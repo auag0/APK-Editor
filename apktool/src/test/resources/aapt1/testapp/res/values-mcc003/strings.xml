@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="test_crossType_bool2str" type="string">true</item>
+    <item name="test_crossType_int2str" type="string">5</item>
+</resources>

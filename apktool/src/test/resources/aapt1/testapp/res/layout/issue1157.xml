@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/brut.apktool.testapp"
+    android:title="test"
+    app:default_value="1.0"
+    app:max_value="5.0"
+    app:min_value="0.2" />

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <attr name="test_attr1" format="integer" />
+    <attr name="test_attr2" format="reference" />
+    <attr name="test_attr3" format="reference" />
+    <attr name="test_attr4" format="string" />
+    <attr name="test_attr5">
+        <enum name="out_test" value="0" />
+        <enum name="in_test" value="1" />
+    </attr>
+    <attr name="test_attr6" format="reference" />
+    <attr name="test_attr7" format="reference" />
+    <attr name="test_attr8" format="reference|color" />
+    <attr name="test_attr9" format="color" />
+    <attr name="test_attr10" format="boolean" />
+    <attr name="test_attr11">
+        <enum name="TEST_ZERO" value="0" />
+        <enum name="TEST_ONE" value="1" />
+    </attr>
+    <attr name="min_value" format="float" />
+    <attr name="max_value" format="float" />
+    <attr name="default_value" format="float" />
+</resources>
