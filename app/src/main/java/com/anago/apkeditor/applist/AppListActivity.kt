@@ -1,9 +1,9 @@
 package com.anago.apkeditor.applist
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -53,14 +53,16 @@ class AppListActivity : AppCompatActivity(), AppListAdapter.Callback {
     }
     
     override fun onAppLongClicked(appItem: AppItem, itemView: View) {
-        PopupMenu(this, itemView).apply {
-            menu.apply {
-                add("Backup").setOnMenuItemClickListener {
-                    selectedAppItem = appItem
-                    selectedAppBackupApk.launch("${appItem.packageName}.apk")
-                    true
+        MaterialAlertDialogBuilder(this).apply {
+            setTitle(appItem.name)
+            setItems(arrayOf("Backup"), DialogInterface.OnClickListener { _, which ->
+                when (which) {
+                    0 -> {
+                        selectedAppItem = appItem
+                        selectedAppBackupApk.launch("${appItem.packageName}.apk")
+                    }
                 }
-            }
+            })
         }.show()
     }
     
