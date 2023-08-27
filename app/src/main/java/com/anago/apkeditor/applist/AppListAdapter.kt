@@ -13,7 +13,7 @@ import com.anago.apkeditor.models.AppItem
 import com.bumptech.glide.Glide
 import com.google.android.material.textview.MaterialTextView
 
-class AppListAdapter(private val context: Context) : ListAdapter<AppItem, AppListAdapter.ViewHolder>(DiffCallback()) {
+class AppListAdapter(private val context: Context, private val callback: Callback) : ListAdapter<AppItem, AppListAdapter.ViewHolder>(DiffCallback()) {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val icon: ImageView = itemView.findViewById(R.id.icon)
         val name: MaterialTextView = itemView.findViewById(R.id.name)
@@ -33,6 +33,15 @@ class AppListAdapter(private val context: Context) : ListAdapter<AppItem, AppLis
             Glide.with(context).load(appItem.icon).error(errorIcon).into(icon)
             name.text = appItem.name
             packageName.text = appItem.packageName
+    
+            itemView.setOnClickListener {
+                callback.onAppClicked(appItem)
+            }
+    
+            itemView.setOnLongClickListener {
+                callback.onAppLongClicked(appItem, itemView)
+                true
+            }
         }
     }
     
@@ -44,5 +53,10 @@ class AppListAdapter(private val context: Context) : ListAdapter<AppItem, AppLis
         override fun areContentsTheSame(oldItem: AppItem, newItem: AppItem): Boolean {
             return oldItem == newItem
         }
+    }
+    
+    interface Callback {
+        fun onAppClicked(appItem: AppItem)
+        fun onAppLongClicked(appItem: AppItem, itemView: View)
     }
 }
