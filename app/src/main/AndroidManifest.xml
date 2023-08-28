@@ -32,6 +32,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".applist.AppListActivity" />
+        <activity android:name=".apkedit.APKEditActivity" />
     </application>
 
 </manifest>

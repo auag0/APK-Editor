@@ -1,10 +1,10 @@
 package com.anago.apkeditor.applist
 
 import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anago.apkeditor.R
+import com.anago.apkeditor.apkedit.APKEditActivity
 import com.anago.apkeditor.compats.PackageManagerCompat.getCApplicationInfo
 import com.anago.apkeditor.models.AppItem
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -49,7 +50,19 @@ class AppListActivity : AppCompatActivity(), AppListAdapter.Callback {
     }
     
     override fun onAppClicked(appItem: AppItem) {
-        Toast.makeText(this, "clicked ${appItem.name}", Toast.LENGTH_SHORT).show()
+        MaterialAlertDialogBuilder(this).apply {
+            setTitle(appItem.name)
+            setItems(arrayOf("APK Edit"), DialogInterface.OnClickListener { _, which ->
+                when (which) {
+                    0 -> {
+                        val intent = Intent(this@AppListActivity, APKEditActivity::class.java).apply {
+                            putExtra("packageName", appItem.packageName)
+                        }
+                        startActivity(intent)
+                    }
+                }
+            })
+        }.show()
     }
     
     override fun onAppLongClicked(appItem: AppItem, itemView: View) {
@@ -104,11 +117,11 @@ class AppListActivity : AppCompatActivity(), AppListAdapter.Callback {
                         bytes = inputStream.read(buffer)
                     }
                 }
+                withContext(Dispatchers.Main) {
+                    dialog.setTitle("Success")
+                }
+                delay(800)
             }
-            withContext(Dispatchers.Main) {
-                dialog.setTitle("Success")
-            }
-            delay(800)
             withContext(Dispatchers.Main) {
                 dialog.dismiss()
             }
