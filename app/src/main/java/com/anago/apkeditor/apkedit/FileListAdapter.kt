@@ -1,23 +1,33 @@
 package com.anago.apkeditor.apkedit
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.anago.apkeditor.R
+import com.anago.apkeditor.models.FileItem
+import com.anago.apkeditor.models.FileItem.Companion.toFile
+import com.anago.apkeditor.models.FileItem.Companion.toFileItem
+import com.anago.apkeditor.utils.FileUtils.sortedFileList
 import com.bumptech.glide.Glide
 import com.google.android.material.textview.MaterialTextView
 import java.io.File
 
-class FileListAdapter(private val context: Context, private val callback: Callback) : ListAdapter<File, FileListAdapter.ViewHolder>(DiffCallback()) {
+class FileListAdapter(
+    private val context: Context,
+    private val rootDir: File,
+    private val callback: Callback
+) : RecyclerView.Adapter<FileListAdapter.ViewHolder>() {
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image: ImageView = itemView.findViewById(R.id.image)
         val name: MaterialTextView = itemView.findViewById(R.id.name)
     }
+
+    private var currentDir: File = rootDir
+    private var fileList: List<FileItem> = currentDir.sortedFileList().map { it.toFileItem() }
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val layoutInflater = LayoutInflater.from(context)
@@ -26,7 +36,7 @@ class FileListAdapter(private val context: Context, private val callback: Callba
     }
     
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val file = getItem(position)
+        val file = fileList[position]
         with(holder) {
             val imageDrawable = if (file.isDirectory) {
                 R.drawable.ic_folder
@@ -37,19 +47,35 @@ class FileListAdapter(private val context: Context, private val callback: Callba
             name.text = file.name
             
             itemView.setOnClickListener {
-                callback.onFileClicked(file)
+                val clickedFile = file.toFile()
+                callback.onFileClicked(clickedFile)
             }
         }
     }
-    
-    private class DiffCallback : DiffUtil.ItemCallback<File>() {
-        override fun areItemsTheSame(oldItem: File, newItem: File): Boolean {
-            return oldItem.absolutePath == newItem.absolutePath
+
+    override fun getItemCount(): Int {
+        return fileList.size
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateFileList() {
+        fileList = currentDir.sortedFileList().map { it.toFileItem() }
+        notifyDataSetChanged()
+    }
+
+    fun openDirectory(file: File) {
+        currentDir = file
+        updateFileList()
+    }
+
+    fun backDirectoryIfCan(): Boolean {
+        val parentFile = currentDir.parentFile ?: return false
+        if (parentFile.startsWith(rootDir)) {
+            currentDir = parentFile
+            updateFileList()
+            return true
         }
-        
-        override fun areContentsTheSame(oldItem: File, newItem: File): Boolean {
-            return oldItem == newItem
-        }
+        return false
     }
     
     interface Callback {

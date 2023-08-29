@@ -2,7 +2,10 @@ package com.anago.apkeditor.applist
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +36,7 @@ class AppListActivity : AppCompatActivity(), AppListAdapter.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_applist)
-        
+    
         val appListAdapter = AppListAdapter(this, this)
         val linearLayoutManager = LinearLayoutManager(this)
         findViewById<RecyclerView>(R.id.appList).apply {

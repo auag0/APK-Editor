@@ -33,4 +33,8 @@ object FileUtils {
         zipInputStream.closeEntry()
         zipInputStream.close()
     }
+    
+    fun File.sortedFileList(): List<File> {
+        return listFiles()?.sortedWith(compareBy({ it.isFile }, { it.name })) ?: emptyList()
+    }
 }

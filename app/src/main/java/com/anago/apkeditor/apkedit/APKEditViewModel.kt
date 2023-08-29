@@ -9,48 +9,47 @@ import androidx.lifecycle.viewModelScope
 import com.anago.apkeditor.compats.PackageManagerCompat.getCApplicationInfo
 import com.anago.apkeditor.utils.FileUtils.unzip
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
 class APKEditViewModel(private val app: Application, private val savedStateHandle: SavedStateHandle) : AndroidViewModel(app) {
     private val appPackageName: String = savedStateHandle["packageName"] ?: throw ExceptionInInitializerError("")
     val applicationInfo: MutableLiveData<ApplicationInfo> = MutableLiveData(getAppInfo(appPackageName))
-    private val decodedDir = File(app.filesDir, "decoded")
+    val decodedDir = File(app.filesDir, "decoded")
     var isExtracted: MutableLiveData<Boolean> = MutableLiveData(false)
-    val isExtracting: MutableLiveData<Boolean> = MutableLiveData(false)
-    private var currentDir: File = decodedDir
-    val fileList: MutableLiveData<List<File>> = MutableLiveData(emptyList())
-    
-    fun onFolderClicked(file: File) {
-        if (file.isDirectory) {
-            currentDir = file
-            updateFileList()
+    private var isExtracting: Boolean = false
+    val progressTime: MutableLiveData<Int> = MutableLiveData(0)
+
+    fun addFile(dest: File, to: File) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dest.copyTo(File(to, dest.name), true)
         }
     }
-    
-    fun onBackDir(): Boolean? {
-        val parentFile = currentDir.parentFile ?: return null
-        if (!parentFile.startsWith(decodedDir)) {
-            return true
+
+    private fun startProgressTimeAddLoop() {
+        viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                if (!isExtracting) {
+                    break
+                }
+                progressTime.postValue(((progressTime.value) ?: 0) + 1)
+                delay(1000)
+            }
         }
-        currentDir = parentFile
-        updateFileList()
-        return false
     }
-    
-    fun updateFileList() {
-        fileList.value = currentDir.listFiles()?.sortedWith(compareBy({ it.isFile }, { it.name }))
-    }
-    
+
     fun startUnZip() {
-        if (isExtracted.value == true || isExtracting.value == true) {
+        if (isExtracted.value == true || isExtracting) {
             return
         }
-        isExtracting.value = true
+        isExtracting = true
+        progressTime.value = 0
+        startProgressTimeAddLoop()
         viewModelScope.launch(Dispatchers.IO) {
             val apkFile = getAPKPath()
             apkFile.unzip(decodedDir)
-            isExtracting.postValue(false)
+            isExtracting = false
             isExtracted.postValue(true)
         }
     }
