@@ -18,27 +18,28 @@ class APKEditViewModel(private val app: Application, private val savedStateHandl
     private val decodedDir = File(app.filesDir, "decoded")
     var isExtracted: MutableLiveData<Boolean> = MutableLiveData(false)
     val isExtracting: MutableLiveData<Boolean> = MutableLiveData(false)
-    val currentDir: MutableLiveData<File> = MutableLiveData(decodedDir)
+    private var currentDir: File = decodedDir
     val fileList: MutableLiveData<List<File>> = MutableLiveData(emptyList())
     
     fun onFolderClicked(file: File) {
         if (file.isDirectory) {
-            currentDir.value = file
+            currentDir = file
             updateFileList()
         }
     }
     
-    fun onBackDir() {
-        val parentFile = currentDir.value?.parentFile ?: return
+    fun onBackDir(): Boolean? {
+        val parentFile = currentDir.parentFile ?: return null
         if (!parentFile.startsWith(decodedDir)) {
-            return
+            return true
         }
-        currentDir.value = parentFile
+        currentDir = parentFile
         updateFileList()
+        return false
     }
     
     fun updateFileList() {
-        fileList.value = currentDir.value?.listFiles()?.sortedWith(compareBy({ it.isFile }, { it.name }))
+        fileList.value = currentDir.listFiles()?.sortedWith(compareBy({ it.isFile }, { it.name }))
     }
     
     fun startUnZip() {

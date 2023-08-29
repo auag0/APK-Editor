@@ -1,5 +1,6 @@
 package com.anago.apkeditor.apkedit
 
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.view.View
@@ -7,6 +8,7 @@ import android.widget.ImageView
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anago.apkeditor.R
@@ -39,7 +41,9 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
     
     private fun backHandle() {
         onBackPressedDispatcher.addCallback(this) {
-            viewModel.onBackDir()
+            if (viewModel.onBackDir() == true) {
+                finish()
+            }
         }
     }
     
@@ -93,6 +97,14 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
     override fun onFileClicked(file: File) {
         if (file.isDirectory) {
             viewModel.onFolderClicked(file)
+        } else {
+            val fileUri = FileProvider.getUriForFile(this, "com.anago.apkeditor.fileprovider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(fileUri, contentResolver.getType(fileUri))
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Open File"))
         }
     }
 }
