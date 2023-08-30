@@ -2,10 +2,7 @@ package com.anago.apkeditor.applist
 
 import android.content.DialogInterface
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,24 +29,33 @@ class AppListActivity : AppCompatActivity(), AppListAdapter.Callback {
     private val viewModel: AppListViewModel by viewModels()
     
     private var selectedAppItem: AppItem? = null
-    
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var progress: LinearProgressIndicator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_applist)
     
         val appListAdapter = AppListAdapter(this, this)
         val linearLayoutManager = LinearLayoutManager(this)
-        findViewById<RecyclerView>(R.id.appList).apply {
+        recyclerView = findViewById<RecyclerView>(R.id.appList).apply {
             adapter = appListAdapter
             layoutManager = linearLayoutManager
             FastScrollerBuilder(this).useMd2Style().build()
         }
+
+        progress = findViewById(R.id.progress)
+        progress.visibility = View.VISIBLE
+        recyclerView.visibility = View.GONE
         
         viewModel.appList.observe(this) { newAppList ->
-            appListAdapter.submitList(newAppList)
+            appListAdapter.submitList(newAppList) {
+                if (!newAppList.isNullOrEmpty()) {
+                    progress.visibility = View.GONE
+                    recyclerView.visibility = View.VISIBLE
+                }
+            }
         }
-        
-        viewModel.loadAppList(this)
     }
     
     override fun onAppClicked(appItem: AppItem) {

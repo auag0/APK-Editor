@@ -1,10 +1,15 @@
 package com.anago.apkeditor
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.ApplicationInfo.FLAG_SYSTEM
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import com.anago.apkeditor.applist.AppListActivity
+import com.anago.apkeditor.compats.PackageManagerCompat.getCInstalledApplications
+import com.anago.apkeditor.utils.TestUtils.measure
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 

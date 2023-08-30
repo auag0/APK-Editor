@@ -18,4 +18,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "APK Editor"
 include(":app")
-include(":apktool")
+//include(":apktool")

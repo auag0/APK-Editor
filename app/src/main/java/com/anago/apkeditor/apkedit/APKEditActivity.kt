@@ -3,9 +3,11 @@ package com.anago.apkeditor.apkedit
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
+import android.os.Environment
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -13,11 +15,14 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.anago.apkeditor.R
+import com.anago.apkeditor.adapters.FileListAdapter
+import com.anago.apkeditor.dialogs.FileSelectDialog
 import com.bumptech.glide.Glide
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
 import java.io.File
 
-class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
+class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback, FileSelectDialog.Callback {
     private val viewModel: APKEditViewModel by viewModels()
     
     private lateinit var iconImageView: ImageView
@@ -28,6 +33,8 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnHome: ImageView
     private lateinit var btnAddFile: ImageView
+    private lateinit var btnAddFolder: ImageView
+    private lateinit var btnSmali: MaterialButton
     private lateinit var fileListAdapter: FileListAdapter
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,6 +70,8 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
         recyclerView = findViewById(R.id.recyclerView)
         btnHome = findViewById(R.id.btn_home)
         btnAddFile = findViewById(R.id.btn_addFile)
+        btnAddFolder = findViewById(R.id.btn_addFolder)
+        btnSmali = findViewById(R.id.btn_smali)
     }
 
     private fun setClickListeners() {
@@ -70,12 +79,22 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
             fileListAdapter.openDirectory(viewModel.decodedDir)
         }
         btnAddFile.setOnClickListener {
-
+            val sdcard = Environment.getExternalStorageDirectory()
+            val dialog = FileSelectDialog("Add a File", sdcard, false, this)
+            dialog.show(supportFragmentManager, null)
+        }
+        btnAddFolder.setOnClickListener {
+            val sdcard = Environment.getExternalStorageDirectory()
+            val dialog = FileSelectDialog("Add a Folder", sdcard, true, this)
+            dialog.show(supportFragmentManager, null)
+        }
+        btnSmali.setOnClickListener {
+            viewModel.startDecompileAllSmali()
         }
     }
     
     private fun setupRecyclerView() {
-        fileListAdapter = FileListAdapter(this, viewModel.decodedDir, this)
+        fileListAdapter = FileListAdapter(this, viewModel.decodedDir, null, this)
         val linearLayoutManager = LinearLayoutManager(this)
         with(recyclerView) {
             adapter = fileListAdapter
@@ -94,6 +113,18 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
         }
         viewModel.progressTime.observe(this) {
             progressTime.text = "$it"
+        }
+        viewModel.isDecompiled.observe(this) {
+            if (it) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@APKEditActivity,
+                        "Successfully decompiled dex files",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    btnSmali.isEnabled = false
+                }
+            }
         }
     }
 
@@ -119,6 +150,25 @@ class APKEditActivity : AppCompatActivity(), FileListAdapter.Callback {
                 addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }
             startActivity(Intent.createChooser(intent, "Open File"))
+        }
+    }
+
+    override fun onSelectedFile(file: File) {
+        val currentDir = fileListAdapter.getCurrentDir()
+        if (file.isFile) {
+            viewModel.addFile(file, currentDir) {
+                fileListAdapter.updateFileList()
+                runOnUiThread {
+                    Toast.makeText(this, "copy successful.", Toast.LENGTH_LONG).show()
+                }
+            }
+        } else {
+            viewModel.addFolder(file, currentDir) {
+                fileListAdapter.updateFileList()
+                runOnUiThread {
+                    Toast.makeText(this, "copy successful.", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 }

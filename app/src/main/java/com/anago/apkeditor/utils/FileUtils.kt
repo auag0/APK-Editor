@@ -1,6 +1,7 @@
 package com.anago.apkeditor.utils
 
 import java.io.File
+import java.io.FileFilter
 import java.util.zip.ZipInputStream
 
 object FileUtils {
@@ -33,8 +34,8 @@ object FileUtils {
         zipInputStream.closeEntry()
         zipInputStream.close()
     }
-    
-    fun File.sortedFileList(): List<File> {
-        return listFiles()?.sortedWith(compareBy({ it.isFile }, { it.name })) ?: emptyList()
+
+    fun File.sortedFileList(filter: FileFilter? = null): List<File> {
+        return listFiles(filter)?.sortedWith(compareBy({ it.isFile }, { it.name })) ?: emptyList()
     }
 }

@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.anago.apkeditor.compats.PackageManagerCompat.getCApplicationInfo
 import com.anago.apkeditor.utils.FileUtils.unzip
+import com.anago.apkeditor.utils.SmaliDecoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -21,9 +22,17 @@ class APKEditViewModel(private val app: Application, private val savedStateHandl
     private var isExtracting: Boolean = false
     val progressTime: MutableLiveData<Int> = MutableLiveData(0)
 
-    fun addFile(dest: File, to: File) {
+    fun addFile(dest: File, to: File, finished: (() -> Unit)? = null) {
         viewModelScope.launch(Dispatchers.IO) {
             dest.copyTo(File(to, dest.name), true)
+            finished?.invoke()
+        }
+    }
+
+    fun addFolder(dest: File, to: File, finished: (() -> Unit)? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dest.copyRecursively(File(to, dest.name), true)
+            finished?.invoke()
         }
     }
 
@@ -52,6 +61,37 @@ class APKEditViewModel(private val app: Application, private val savedStateHandl
             isExtracting = false
             isExtracted.postValue(true)
         }
+    }
+
+    val isDecompiled: MutableLiveData<Boolean> = MutableLiveData(false)
+    private var isDecompiling: Boolean = false
+
+    fun startDecompileAllSmali() {
+        if (isDecompiled.value == true || isDecompiling) {
+            return
+        }
+        isDecompiling = true
+        viewModelScope.launch(Dispatchers.IO) {
+            getDexFiles().forEach { dexFile ->
+                val regex = Regex("classes(\\d*)\\.dex")
+                val dexNum = regex.find(dexFile.name)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                val outFileName = if (dexNum == 0) {
+                    "smali"
+                } else {
+                    "smali_classes$dexNum"
+                }
+                val outFile = File(decodedDir, outFileName)
+                SmaliDecoder.decode(getAPKPath(), outFile, dexFile.name, false, 0)
+            }
+            isDecompiling = false
+            isDecompiled.postValue(true)
+        }
+    }
+
+    private fun getDexFiles(): List<File> {
+        return decodedDir.listFiles()?.filter {
+            it.name.startsWith("classes") && it.name.endsWith(".dex")
+        }?.sorted() ?: emptyList()
     }
     
     private fun getAppInfo(packageName: String): ApplicationInfo {

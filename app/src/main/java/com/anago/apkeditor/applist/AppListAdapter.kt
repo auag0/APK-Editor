@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.core.util.ObjectsCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -51,7 +52,7 @@ class AppListAdapter(private val context: Context, private val callback: Callbac
         }
         
         override fun areContentsTheSame(oldItem: AppItem, newItem: AppItem): Boolean {
-            return oldItem == newItem
+            return ObjectsCompat.equals(oldItem.packageName, newItem.packageName)
         }
     }
     

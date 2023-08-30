@@ -38,8 +38,10 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.7.2")
     
-    implementation(project(":apktool"))
-    
+    //implementation(project(":apktool"))
+    implementation("com.android.tools.smali:smali-baksmali:3.0.3")
+
+
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("me.zhanghai.android.fastscroll:library:1.3.0")
 }
